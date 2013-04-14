@@ -70,7 +70,8 @@
         android:fadingEdgeLength="0dp"
         android:horizontalSpacing="0dp"
         android:numColumns="8"
-        android:verticalSpacing="0dp" >
+        android:verticalSpacing="0dp"
+        android:listSelector="#00000000" >
     </GridView>
 
 </RelativeLayout>

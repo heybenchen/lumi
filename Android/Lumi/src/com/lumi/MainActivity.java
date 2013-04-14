@@ -32,6 +32,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,7 +56,7 @@ public class MainActivity extends Activity {
     Handler h;
     GridView gridView;
 
-    static int currentColor = 0xff000000; // Currently selected color
+    static int currentColor = 0xff6699cc; // Currently selected color
 
     final int RECIEVE_MESSAGE = 1; // Status for Handler
     private BluetoothAdapter btAdapter = null;
@@ -96,6 +97,7 @@ public class MainActivity extends Activity {
                     int endOfLineIndex = sb.indexOf("\r\n"); // determine the end-of-line
                     if (endOfLineIndex > 0) { // if end-of-line,
                         String sbprint = sb.substring(0, endOfLineIndex); // extract string
+                        Log.i("MSG", "sbprint: " + sbprint);
                         sb.delete(0, sb.length()); // and clear
                         txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
                         btn3.setEnabled(true);
@@ -147,14 +149,11 @@ public class MainActivity extends Activity {
 
                             // Returned when user selects a color
                             public void onOk(AmbilWarnaDialog dialog, int color) {
-                                // Toast.makeText(getApplicationContext(), "OK: " + Integer.toHexString(color),
-                                // Toast.LENGTH_SHORT).show();
                                 currentColor = color;
                             }
 
                             // User cancels color selection
                             public void onCancel(AmbilWarnaDialog dialog) {
-                                // Toast.makeText(getApplicationContext(), "Cancel", Toast.LENGTH_SHORT).show();
                             }
                         });
                 dialog.show();
@@ -163,15 +162,18 @@ public class MainActivity extends Activity {
 
         // Configure interactive LED grid
         gridView.setAdapter(new LEDImageAdapter(this));
+        gridView.setBackgroundColor(Color.BLACK);
         gridView.setOnItemClickListener(new OnItemClickListener() {
+            
+            // Sets LED to currentColor
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                // Toast.makeText( getApplicationContext(), "Position: " + position, Toast.LENGTH_SHORT).show();
-                ImageView iv = (ImageView) v.getTag();
-                iv.getDrawable().setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
+                ((ImageView) v).setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
+                byte[] cmd = Comm.displayLEDBytes(position / 8, position % 8, currentColor);
+                mConnectedThread.write(cmd);
             }
         });
     }
-
+    
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         if (Build.VERSION.SDK_INT >= 10) {
             try {
@@ -317,6 +319,18 @@ public class MainActivity extends Activity {
             byte[] msgBuffer = message.getBytes();
             try {
                 mmOutStream.write(msgBuffer);
+                Log.d(TAG, "...Sending Bytestream: " + msgBuffer + "...");
+            } catch (IOException e) {
+                Log.d(TAG, "...Error data send: " + e.getMessage() + "...");
+                txtArduino.setText("Error: " + e.getMessage());
+            }
+        }
+        
+        /* Call this from the main activity to send data to the remote device */
+        public void write(byte[] message) {
+            Log.d(TAG, "...Data to send: " + message + "...");
+            try {
+                mmOutStream.write(message);
             } catch (IOException e) {
                 Log.d(TAG, "...Error data send: " + e.getMessage() + "...");
                 txtArduino.setText("Error: " + e.getMessage());

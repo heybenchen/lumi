@@ -52,7 +52,7 @@ unsigned char dots[2][8][8][3] = {0};
 //[8]:Row:8 row in LED plane
 //[8]:Column:8 column in one row
 //[3]:Color:RGB data: 0 for Red; 1 for green, 2 for Blue
-unsigned char Gamma_Value[3] = {10,63,63};
+unsigned char Gamma_Value[3] = {36,63,63};
 //Gamma correctly value, every LED plane is different.value range is 0~63
 //[3]:RGB data, 0 for Red; 1 for green, 2 for Blue
 unsigned char Page_Index = 0; // the index of buffer
@@ -62,9 +62,11 @@ unsigned char color = 0;//the value of every dots, 0 is Red, 1 is Green, 2 is Bl
 
 unsigned char line = 0;
 
-char val;         // variable to receive data from the serial port
+unsigned char val;         // variable to receive data from the serial port
 
-int ledpin = 2;  // LED connected to pin 2 (on-board LED)
+unsigned char bytes[6];
+
+byte ledpin = 2;  // LED connected to pin 2 (on-board LED)
 
 /**************************************************
 define the extern data zone
@@ -259,7 +261,7 @@ Parameter:chr :the latter want to show
           B: the value of BLUE.  Range:RED 0~255
           bias: the bias of a letter in LED Matrix.Range -7~7
 ********************************************************/
-void DispShowChar(char chr,unsigned char R,unsigned char G,unsigned char B,char bias)
+void DispShowChar(char chr, unsigned char R, unsigned char G, unsigned char B, char bias)
 {
   unsigned char i,j,Page_Write,temp;
   unsigned char Char;
@@ -311,7 +313,7 @@ Parameter:R: the value of RED.   Range:RED 0~255
           G: the value of GREEN. Range:RED 0~255
           B: the value of BLUE.  Range:RED 0~255
 ********************************************************/
-void DispShowColor(unsigned char R,unsigned char G,unsigned char B)
+void DispShowColor(unsigned char R, unsigned char G, unsigned char B)
 {
   unsigned char Page_Write,i,j;
   
@@ -339,7 +341,7 @@ Parameter:i: the row of the LED
           G: the value of GREEN. Range:RED 0~255
           B: the value of BLUE.  Range:RED 0~255
 ********************************************************/
-void DispSetPixel(int i, int j, unsigned char R,unsigned char G,unsigned char B)
+void DispSetPixel(unsigned char  i, unsigned char j, unsigned char R, unsigned char G, unsigned char B)
 {
   unsigned char Page_Write;
   
@@ -348,9 +350,12 @@ void DispSetPixel(int i, int j, unsigned char R,unsigned char G,unsigned char B)
   if(Page_Index == 1)
     Page_Write = 0;
     
-  dots[Page_Write][i][j][2] = R;
-  dots[Page_Write][i][j][1] = G;
-  dots[Page_Write][i][j][0] = B;
+  dots[0][i][j][2] = R;
+  dots[0][i][j][1] = G;
+  dots[0][i][j][0] = B;
+  dots[1][i][j][2] = R;
+  dots[1][i][j][1] = G;
+  dots[1][i][j][0] = B;
   
   Page_Index = Page_Write;
 }
@@ -391,6 +396,15 @@ void LED_Delay(unsigned char i)
   y = i * 10;
   while(y--);
 }
+
+// Convert hex char to byte
+byte charToHex(char c)
+{
+   if(c >= '0' && c <= '9')
+     return (byte)(c - '0');
+   else
+     return (byte)(c-'A'+10);
+}
 /****************************************************
 Main Functions zone
 ****************************************************/
@@ -405,47 +419,45 @@ void setup()
   pinMode(ledpin = 13, OUTPUT);  // pin 13 (on-board LED) as OUTPUT
   Serial.begin(115200);       // start serial communication at 115200bps
 }
+
 void loop()
 {
   unsigned int i = 500; 
-  if (Serial.available() > 0)
+  if (Serial.available() > 5)
   {
     val = Serial.read();
-    Serial.print("Received: ");
+    Serial.print("val: ");
     Serial.println(val);
+    
+    // Set single LED
+    if (val == 'd'){
+      bytes[0] = 'd';
+      int j;
+      for (j = 1; j < 6; j++){
+        bytes[j] = Serial.read();
+      }
+      //Serial.println(bytes);
+      DispSetPixel(bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
+    }      
   }
   
-  if( val == '0' )               
-  {
-    DispShowPic(0);
-    delay(i);
-    DispShowColor(0, 0, 0); //clear screen
-    delay(i);
-  }
-
-  if( val == '1' )              
-  {
-    DispShowPic(1);
-    delay(i);
-    DispShowColor(0, 0, 0); //clear screen
-    delay(i);
-  }
+  else if (Serial.available() > 0 && Serial.available() <= 5){
+    if( val == '0' )               
+    {
+      DispShowPic(0);
+      delay(i);
+      DispShowColor(0, 0, 0); //clear screen
+      delay(i);
+    }
   
-  /*unsigned int i = 1000;
-  char j=0;
- 
-  DispShowPic(0);
-  delay(i);
-  DispShowPic(1);
-  delay(i);
-  DispShowPic(2);
-  delay(i);
-  DispShowPic(3);
-  delay(i);
-  DispShowPic(4);
-  delay(i);
-  DispShowPic(5);
-  delay(i);*/
+    else if( val == '1' )              
+    {
+      DispShowPic(1);
+      delay(i);
+      DispShowColor(0, 0, 0); //clear screen
+      delay(i);
+    }  
+  }
 }
 
 

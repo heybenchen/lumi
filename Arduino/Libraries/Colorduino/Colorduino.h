@@ -302,6 +302,15 @@ class ColorduinoObject {
       p->g = g;
       p->b = b;
     }
+	
+  // set a pixel in the offscreen frame buffer
+  void SetDrawPixel(unsigned char x, unsigned char y, unsigned char r, unsigned char g, unsigned char b)
+    {
+      PixelRGB *p = GetDrawPixel(x,y);
+      p->r = r;
+      p->g = g;
+      p->b = b;
+    }
 
 /********************************************************
 Name: ColorFill

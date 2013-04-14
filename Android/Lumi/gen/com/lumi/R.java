@@ -22,11 +22,9 @@ public final class R {
         public static final int ambilwarna_cursor=0x7f020002;
         public static final int ambilwarna_hue=0x7f020003;
         public static final int ambilwarna_target=0x7f020004;
-        public static final int cxemnet_logo=0x7f020005;
-        public static final int ic_action_search=0x7f020006;
-        public static final int ic_launcher=0x7f020007;
-        public static final int led_off=0x7f020008;
-        public static final int led_on=0x7f020009;
+        public static final int ic_launcher=0x7f020005;
+        public static final int led_off=0x7f020006;
+        public static final int led_on=0x7f020007;
     }
     public static final class id {
         public static final int ambilwarna_cursor=0x7f07000b;
@@ -39,13 +37,13 @@ public final class R {
         public static final int ambilwarna_viewSatBri=0x7f070009;
         public static final int ambilwarna_warnaBaru=0x7f07000f;
         public static final int ambilwarna_warnaLama=0x7f07000e;
-        public static final int btn1=0x7f070005;
+        public static final int btn1=0x7f070004;
         public static final int btn2=0x7f070001;
         public static final int btn3=0x7f070003;
-        public static final int btnColorPicker=0x7f070004;
+        public static final int btnColorPicker=0x7f070000;
         public static final int btnConnect=0x7f070002;
         public static final int gridView1=0x7f070006;
-        public static final int txtArduino=0x7f070000;
+        public static final int txtArduino=0x7f070005;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

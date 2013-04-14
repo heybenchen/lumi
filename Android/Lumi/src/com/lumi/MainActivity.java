@@ -1,11 +1,11 @@
 /**
- * 	Lumi - Illuminated Notification System
- * 	@version 1.0
+ *  Lumi - Illuminated Notification System
+ *  @version 1.0
  * 
- * 	Created by:
+ *  Created by:
  * 
- * 	@author Ben Shuyi Chen
- * 	@author Aman Ali
+ *  @author Ben Shuyi Chen
+ *  @author Aman Ali
 
  *  Utilizes:
  *  
@@ -32,6 +32,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,6 +43,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +54,8 @@ public class MainActivity extends Activity {
     TextView txtArduino;
     Handler h;
     GridView gridView;
+
+    static int currentColor = 0xff000000; // Currently selected color
 
     final int RECIEVE_MESSAGE = 1; // Status for Handler
     private BluetoothAdapter btAdapter = null;
@@ -143,27 +147,27 @@ public class MainActivity extends Activity {
 
                             // Returned when user selects a color
                             public void onOk(AmbilWarnaDialog dialog, int color) {
-                                Toast.makeText(getApplicationContext(), "OK: " + Integer.toHexString(color),
-                                        Toast.LENGTH_SHORT).show();
+                                // Toast.makeText(getApplicationContext(), "OK: " + Integer.toHexString(color),
+                                // Toast.LENGTH_SHORT).show();
+                                currentColor = color;
                             }
 
                             // User cancels color selection
                             public void onCancel(AmbilWarnaDialog dialog) {
-                                Toast.makeText(getApplicationContext(), "Cancel", Toast.LENGTH_SHORT).show();
+                                // Toast.makeText(getApplicationContext(), "Cancel", Toast.LENGTH_SHORT).show();
                             }
                         });
                 dialog.show();
             }
         });
-        
+
         // Configure interactive LED grid
         gridView.setAdapter(new LEDImageAdapter(this));
         gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText( 
-                    getApplicationContext(),
-                    "Position: " + position, 
-                    Toast.LENGTH_SHORT).show();
+                // Toast.makeText( getApplicationContext(), "Position: " + position, Toast.LENGTH_SHORT).show();
+                ImageView iv = (ImageView) v.getTag();
+                iv.getDrawable().setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
             }
         });
     }
@@ -193,8 +197,8 @@ public class MainActivity extends Activity {
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         // Two things are needed to make a connection:
-        // A MAC address, which we got above.
-        // A Service ID or UUID. In this case we are using the UUID for SPP.
+        //      A MAC address, which we got above.
+        //      A Service ID or UUID. In this case we are using the UUID for SPP.
 
         try {
             btSocket = createBluetoothSocket(device);

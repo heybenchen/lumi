@@ -51,7 +51,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth2";
 
-    Button btn1, btn2, btn3, btnConnect, btnColorPicker;
+    Button btn1, btn2, btn3, btnConnect, btnColorPicker, btnErase;
     TextView txtArduino;
     Handler h;
     GridView gridView;
@@ -83,6 +83,7 @@ public class MainActivity extends Activity {
         btn3 = (Button) findViewById(R.id.btn3);
         btnConnect = (Button) findViewById(R.id.btnConnect);
         btnColorPicker = (Button) findViewById(R.id.btnColorPicker);
+        btnErase = (Button) findViewById(R.id.btnErase);
         txtArduino = (TextView) findViewById(R.id.txtArduino); // displays received data from the Arduino
         gridView = (GridView) findViewById(R.id.gridView1); // displays interactive LED grid
 
@@ -136,7 +137,14 @@ public class MainActivity extends Activity {
 
         btnConnect.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
+                closeSocket();
                 connectToBluetooth();
+            }
+        });
+        
+        btnErase.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                currentColor = 0xff000000;
             }
         });
 
@@ -167,7 +175,10 @@ public class MainActivity extends Activity {
             
             // Sets LED to currentColor
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                ((ImageView) v).setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
+                if (currentColor == 0xff000000) // Erase Mode
+                    ((ImageView) v).setColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY);
+                else
+                    ((ImageView) v).setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
                 byte[] cmd = Comm.displayLEDBytes(position / 8, position % 8, currentColor);
                 mConnectedThread.write(cmd);
             }
@@ -244,9 +255,11 @@ public class MainActivity extends Activity {
     @Override
     public void onPause() {
         super.onPause();
-
         Log.d(TAG, "...In onPause()...");
-
+        closeSocket();
+    }
+    
+    private void closeSocket() {
         try {
             btSocket.close();
         } catch (IOException e2) {

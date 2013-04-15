@@ -26,7 +26,7 @@ public class Comm {
         bytes[5] = colors[3]; //Blue
         
         for (byte b: bytes) {
-            Log.i("Bytesteam", "B: " + b);
+            Log.i("Bytestream", "B: " + b);
         }
         
         return bytes;

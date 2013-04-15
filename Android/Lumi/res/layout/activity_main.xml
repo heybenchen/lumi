@@ -20,22 +20,13 @@
         android:layout_alignRight="@+id/btn3"
         android:text="Connect To Lumi" />
 
-    <Button
-        android:id="@+id/btn1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/btn2"
-        android:layout_alignBottom="@+id/btn2"
-        android:layout_alignLeft="@+id/btnColorPicker"
-        android:text="Animation 1" />
-
     <TextView
         android:id="@+id/txtArduino"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/btn2"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
@@ -49,16 +40,8 @@
         android:layout_alignBaseline="@+id/btn2"
         android:layout_alignBottom="@+id/btn2"
         android:layout_alignRight="@+id/txtArduino"
+        android:layout_toRightOf="@+id/btn2"
         android:text="Turn Off" />
-
-    <Button
-        android:id="@+id/btn2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/btnConnect"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:text="Animation 2" />
 
     <GridView
         android:id="@+id/gridView1"
@@ -73,6 +56,32 @@
         android:verticalSpacing="0dp"
         android:listSelector="#00000000" >
     </GridView>
+
+    <Button
+        android:id="@+id/btnErase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn2"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/btnConnect"
+        android:text="Erase" />
+
+    <Button
+        android:id="@+id/btn1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnColorPicker"
+        android:layout_alignLeft="@+id/btnColorPicker"
+        android:layout_toLeftOf="@+id/btn2"
+        android:text="Animation 1" />
+
+    <Button
+        android:id="@+id/btn2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnColorPicker"
+        android:layout_centerHorizontal="true"
+        android:text="Animation 2" />
 
 </RelativeLayout>
 

@@ -1,10 +1,11 @@
 /*
-  Ben Shuyi Chen
-  Aman Ali
-  Senior Design
   Lumi - Illuminated Notification Display
   
-  Credits to:
+  Authors:
+  Ben Shuyi Chen
+  Aman Ali
+  
+  Credits:
   Colorduino for Arduino.
   Copyright (c) 2010 zzy@IteadStudio.  All right reserved.
 */
@@ -63,8 +64,9 @@ unsigned char color = 0;//the value of every dots, 0 is Red, 1 is Green, 2 is Bl
 unsigned char line = 0;
 
 unsigned char val;         // variable to receive data from the serial port
+unsigned char index;
 
-unsigned char bytes[6];
+unsigned char bytes[5];
 
 byte ledpin = 2;  // LED connected to pin 2 (on-board LED)
 
@@ -350,12 +352,9 @@ void DispSetPixel(unsigned char  i, unsigned char j, unsigned char R, unsigned c
   if(Page_Index == 1)
     Page_Write = 0;
     
-  dots[0][i][j][2] = R;
-  dots[0][i][j][1] = G;
-  dots[0][i][j][0] = B;
-  dots[1][i][j][2] = R;
-  dots[1][i][j][1] = G;
-  dots[1][i][j][0] = B;
+  dots[Page_Write][i][j][2] = R;
+  dots[Page_Write][i][j][1] = G;
+  dots[Page_Write][i][j][0] = B;
   
   Page_Index = Page_Write;
 }
@@ -388,7 +387,7 @@ void DispShowPic(unsigned char Index)
   
 }
 /******************************************
-the other operate functions zone
+the other operate functions
 ******************************************/
 void LED_Delay(unsigned char i)
 {
@@ -406,7 +405,7 @@ byte charToHex(char c)
      return (byte)(c-'A'+10);
 }
 /****************************************************
-Main Functions zone
+Main Functions
 ****************************************************/
 void setup()
 {
@@ -417,29 +416,27 @@ void setup()
   
   //Bluetooth
   pinMode(ledpin = 13, OUTPUT);  // pin 13 (on-board LED) as OUTPUT
-  Serial.begin(115200);       // start serial communication at 115200bps
+  Serial.begin(38400);       // start serial communication at 115200bps
 }
 
 void loop()
 {
   unsigned int i = 500; 
-  if (Serial.available() > 5)
-  {
+  if (Serial.available() > 5) {
     val = Serial.read();
-    Serial.print("val: ");
-    Serial.println(val);
     
-    // Set single LED
-    if (val == 'd'){
-      bytes[0] = 'd';
-      int j;
-      for (j = 1; j < 6; j++){
-        bytes[j] = Serial.read();
+    if (val == 'd'){ // Draw single LED
+      
+      for (index = 0; index < 5; index++) {
+        if (Serial.available() > 0)
+          bytes[index] = Serial.read();
       }
-      //Serial.println(bytes);
-      DispSetPixel(bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
-    }      
-  }
+      Serial.flush();
+       
+      DispSetPixel((unsigned char)bytes[0], (unsigned char)bytes[1], (unsigned char)bytes[2], 
+                   (unsigned char)bytes[3], (unsigned char)bytes[4]);    
+    }
+  }      
   
   else if (Serial.available() > 0 && Serial.available() <= 5){
     if( val == '0' )               

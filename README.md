@@ -2,6 +2,8 @@ Lumi - Illuminated Notification System
 =================
 Version 1.0
 
+![Image](/Android/Lumi/res/drawable/ic_launcher.png)
+
 ####Created by: 
 
 Ben Shuyi Chen  

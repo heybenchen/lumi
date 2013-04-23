@@ -28,9 +28,13 @@ import java.util.UUID;
 import yuku.ambilwarna.AmbilWarnaDialog;
 import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -38,10 +42,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -51,12 +55,14 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth2";
 
-    Button btn1, btn2, btn3, btnConnect, btnColorPicker, btnErase;
+    Button btnAnim1, btnAnim2, btnOff, btnConnect, btnColorPicker, btnErase, btnSMS;
     TextView txtArduino;
     Handler h;
     GridView gridView;
 
     static int currentColor = 0xff6699cc; // Currently selected color
+
+    static boolean eraseMode = false;
 
     final int RECIEVE_MESSAGE = 1; // Status for Handler
     private BluetoothAdapter btAdapter = null;
@@ -78,14 +84,15 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        btn1 = (Button) findViewById(R.id.btn1);
-        btn2 = (Button) findViewById(R.id.btn2);
-        btn3 = (Button) findViewById(R.id.btn3);
+        btnAnim1 = (Button) findViewById(R.id.btnAnim1);
+        btnAnim2 = (Button) findViewById(R.id.btnAnim2);
+        btnOff = (Button) findViewById(R.id.btnClear);
         btnConnect = (Button) findViewById(R.id.btnConnect);
         btnColorPicker = (Button) findViewById(R.id.btnColorPicker);
         btnErase = (Button) findViewById(R.id.btnErase);
+        btnSMS = (Button) findViewById(R.id.btnSMS);
         txtArduino = (TextView) findViewById(R.id.txtArduino); // displays received data from the Arduino
-        gridView = (GridView) findViewById(R.id.gridView1); // displays interactive LED grid
+        gridView = (GridView) findViewById(R.id.gvLEDs); // displays interactive LED grid
 
         // Handles incoming messages via Bluetooth
         h = new Handler() {
@@ -101,9 +108,8 @@ public class MainActivity extends Activity {
                         Log.i("MSG", "sbprint: " + sbprint);
                         sb.delete(0, sb.length()); // and clear
                         txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
-                        btn3.setEnabled(true);
-                        btn2.setEnabled(true);
-                        btn1.setEnabled(true);
+                        btnAnim2.setEnabled(true);
+                        btnAnim1.setEnabled(true);
                     }
                     // Log.d(TAG, "...String:"+ sb.toString() + "Byte:" + msg.arg1 + "...");
                     break;
@@ -114,24 +120,29 @@ public class MainActivity extends Activity {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
 
-        btn1.setOnClickListener(new OnClickListener() {
+        btnAnim1.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                btn1.setEnabled(false);
+                btnAnim1.setEnabled(false);
                 mConnectedThread.write("0");
             }
         });
 
-        btn2.setOnClickListener(new OnClickListener() {
+        btnAnim2.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                btn2.setEnabled(false);
+                btnAnim2.setEnabled(false);
                 mConnectedThread.write("1");
             }
         });
 
-        btn3.setOnClickListener(new OnClickListener() {
+        btnOff.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                btn3.setEnabled(false);
-                mConnectedThread.write("2");
+                mConnectedThread.write(Comm.clearScreen());
+                int count = gridView.getChildCount();
+                ImageView tv;
+                    for (int i = 0; i < count; i++){
+                        tv = (ImageView) gridView.getChildAt(i);
+                        tv.setColorFilter(Color.WHITE);
+                    }
             }
         });
 
@@ -141,18 +152,29 @@ public class MainActivity extends Activity {
                 connectToBluetooth();
             }
         });
-        
+
         btnErase.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                currentColor = 0xff000000;
+                if (!eraseMode) {
+                    eraseMode = true;
+                    btnErase.setText("Draw");
+                } else {
+                    eraseMode = false;
+                    btnErase.setText("Erase");
+                }
+            }
+        });
+
+        btnSMS.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                sendNotification("Message", "Hiya Lumi!");
             }
         });
 
         btnColorPicker.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                int initialColor = 0xff6699cc; // Note: initial 0xff is the alpha color
 
-                AmbilWarnaDialog dialog = new AmbilWarnaDialog(MainActivity.this, initialColor,
+                AmbilWarnaDialog dialog = new AmbilWarnaDialog(MainActivity.this, currentColor,
                         new OnAmbilWarnaListener() {
 
                             // Returned when user selects a color
@@ -171,20 +193,74 @@ public class MainActivity extends Activity {
         // Configure interactive LED grid
         gridView.setAdapter(new LEDImageAdapter(this));
         gridView.setBackgroundColor(Color.BLACK);
-        gridView.setOnItemClickListener(new OnItemClickListener() {
-            
-            // Sets LED to currentColor
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if (currentColor == 0xff000000) // Erase Mode
-                    ((ImageView) v).setColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY);
-                else
-                    ((ImageView) v).setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
-                byte[] cmd = Comm.displayLEDBytes(position / 8, position % 8, currentColor);
-                mConnectedThread.write(cmd);
+        gridView.setOnTouchListener(new OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent me) {
+
+                //int action = me.getActionMasked();  // MotionEvent types such as ACTION_UP, ACTION_DOWN
+                float currentXPosition = me.getX();
+                float currentYPosition = me.getY();
+                int position = gridView.pointToPosition((int) currentXPosition, (int) currentYPosition);
+                //Log.d("GridView", "Position: " + position + " X: " + currentXPosition + " Y: " + currentYPosition);
+
+                if (position >= 0) {
+                    // Access text in the cell, or the object itself
+                    ImageView tv = (ImageView) gridView.getChildAt(position);
+
+                    byte[] cmd = null;
+                    if (eraseMode) {
+                        // Setting the color filter to WHITE is equivalent to removing it
+                        tv.setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+
+                        // Sending the color BLACK is equivalent to turning the LED off
+                        cmd = Comm.displayLEDBytes(position / 8, position % 8, Color.BLACK);
+                    } else {
+                        tv.setColorFilter(currentColor, PorterDuff.Mode.MULTIPLY);
+                        cmd = Comm.displayLEDBytes(position / 8, position % 8, currentColor);
+                    }
+                    if (cmd != null) {
+                        mConnectedThread.write(cmd);
+                        return true;
+                    } else
+                        Log.e("Lumi", "Error generating cmd to send to Lumi via BT.");
+                }
+                return false;
             }
         });
+
+        // Check if Accessibility is Enabled (Required to catch notifications)
+        if (Comm.isLumiAccessibilityEnabled(this)) {
+            // Initialize NotificationCatcherService
+            Context context = this;
+            Intent service = new Intent(context, NotificationCatcherService.class);
+            context.startService(service);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "...onResume - try connect...");
+        connectToBluetooth();
     }
     
+    protected void sendNotification(String title, String message) {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
+        int icon = R.drawable.msg;
+        CharSequence tickerText = message;
+        long when = System.currentTimeMillis();
+        Notification notification = new Notification(icon, tickerText, when);
+        Context context = getApplicationContext();
+        CharSequence contentTitle = title;
+        CharSequence contentText = message;
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+        mNotificationManager.notify(1, notification);
+    }
+
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         if (Build.VERSION.SDK_INT >= 10) {
             try {
@@ -198,20 +274,13 @@ public class MainActivity extends Activity {
         return device.createRfcommSocketToServiceRecord(MY_UUID);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "...onResume - try connect...");
-        connectToBluetooth();
-    }
-
     private void connectToBluetooth() {
         // Set up a pointer to the remote node using it's address.
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         // Two things are needed to make a connection:
-        //      A MAC address, which we got above.
-        //      A Service ID or UUID. In this case we are using the UUID for SPP.
+        // A MAC address, which we got above.
+        // A Service ID or UUID. In this case we are using the UUID for SPP.
 
         try {
             btSocket = createBluetoothSocket(device);
@@ -258,7 +327,7 @@ public class MainActivity extends Activity {
         Log.d(TAG, "...In onPause()...");
         closeSocket();
     }
-    
+
     private void closeSocket() {
         try {
             btSocket.close();
@@ -338,7 +407,7 @@ public class MainActivity extends Activity {
                 txtArduino.setText("Error: " + e.getMessage());
             }
         }
-        
+
         /* Call this from the main activity to send data to the remote device */
         public void write(byte[] message) {
             Log.d(TAG, "...Data to send: " + message + "...");

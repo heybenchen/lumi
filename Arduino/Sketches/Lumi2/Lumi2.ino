@@ -1,3 +1,10 @@
+/* Lumi - Illuminated Notification System
+ *  @version 1.0
+
+ *  @author Ben Shuyi Chen
+ *  @author Aman Ali
+*/
+
 #include "Colorduino.h"
 
 char val;         // variable to receive data from the serial port
@@ -19,13 +26,10 @@ void setup()
 }
 
 void loop() {
-  if (Serial.available() > 5)
-  {
+  if (Serial.available() > 5) {
     val = Serial.read();
-    
     if (val == 'd'){ // Draw single LED
-      
-      if (Serial.readBytes(bytes, 5) == 5){ // If successfully reads next 5 bytes:
+      if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
         Serial.flush();
        
         Colorduino.SetPixel((unsigned char)bytes[0], (unsigned char)bytes[1], (unsigned char)bytes[2], 
@@ -34,7 +38,14 @@ void loop() {
                                 (unsigned char)bytes[3], (unsigned char)bytes[4]);
         Colorduino.FlipPage();       
       }
-    }      
+    }
+    else if (val == 'c'){ // Clear Screen
+        if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
+          Serial.flush();
+          Colorduino.ColorFill(0, 0, 0);
+          Colorduino.ColorFill(0, 0, 0);
+        }
+      }  
   }
 }
 

@@ -12,19 +12,19 @@ public class LEDImageAdapter extends BaseAdapter {
  
     // Keep all Images in array
     public Integer[] mThumbIds = {
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off,
-            R.drawable.led_off, R.drawable.led_off, R.drawable.led_off, R.drawable.led_off
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square,
+            R.drawable.led_square, R.drawable.led_square, R.drawable.led_square, R.drawable.led_square
     };
  
     // Constructor
@@ -51,7 +51,7 @@ public class LEDImageAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView imageView = new ImageView(mContext);
         imageView.setImageResource(mThumbIds[position]); //TEMP: setting index to 0 since there is only one image
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         imageView.setLayoutParams(new GridView.LayoutParams(60, 60));
         return imageView;
     }

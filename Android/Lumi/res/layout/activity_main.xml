@@ -4,27 +4,11 @@
     android:layout_height="match_parent"
     android:gravity="center" >
 
-    <Button
-        android:id="@+id/btnColorPicker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/btn2"
-        android:text="Choose Color" />
-
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/btn3"
-        android:text="Connect To Lumi" />
-
     <TextView
         android:id="@+id/txtArduino"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn2"
+        android:layout_above="@+id/btnAnim2"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="5dp"
@@ -33,55 +17,80 @@
         android:gravity="center"
         android:text="Console Text" />
 
-    <Button
-        android:id="@+id/btn3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/btn2"
-        android:layout_alignBottom="@+id/btn2"
-        android:layout_alignRight="@+id/txtArduino"
-        android:layout_toRightOf="@+id/btn2"
-        android:text="Turn Off" />
-
     <GridView
-        android:id="@+id/gridView1"
+        android:id="@+id/gvLEDs"
         android:layout_width="320dp"
-        android:layout_height="330dp"
+        android:layout_height="326dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:fadingEdge="none"
         android:fadingEdgeLength="0dp"
         android:horizontalSpacing="0dp"
+        android:listSelector="#00000000"
         android:numColumns="8"
-        android:verticalSpacing="0dp"
-        android:listSelector="#00000000" >
+        android:paddingTop="2dp"
+        android:verticalSpacing="0dp" >
+
     </GridView>
 
     <Button
         android:id="@+id/btnErase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btn2"
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/btnConnect"
+        android:layout_toRightOf="@+id/btnColorPicker"
         android:text="Erase" />
 
     <Button
-        android:id="@+id/btn1"
+        android:id="@+id/btnAnim1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/btnColorPicker"
         android:layout_alignLeft="@+id/btnColorPicker"
-        android:layout_toLeftOf="@+id/btn2"
-        android:text="Animation 1" />
+        android:layout_alignRight="@+id/btnColorPicker"
+        android:text="Anim1" />
 
     <Button
-        android:id="@+id/btn2"
+        android:id="@+id/btnSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btnColorPicker"
-        android:layout_centerHorizontal="true"
-        android:text="Animation 2" />
+        android:layout_alignBaseline="@+id/btnClear"
+        android:layout_alignBottom="@+id/btnClear"
+        android:layout_alignParentRight="true"
+        android:text="SMS" />
+
+    <Button
+        android:id="@+id/btnClear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btnAnim2"
+        android:layout_toLeftOf="@+id/btnSMS"
+        android:text="Clear Screen" />
+
+    <Button
+        android:id="@+id/btnColorPicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:text="Choose Color" />
+
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Connect To Lumi" />
+
+    <Button
+        android:id="@+id/btnAnim2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnErase"
+        android:layout_toLeftOf="@+id/btnClear"
+        android:text="Anim2" />
 
 </RelativeLayout>
 

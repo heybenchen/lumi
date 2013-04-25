@@ -13,6 +13,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class Comm {
+    
+    public static final String EMAIL = "EMAIL";
+    public static final String EMAIL_URGENT = "EMAIL_URGENT";
+    public static final String MSG = "MSG";
 
     static byte[] bytes = new byte[6];
 
@@ -61,6 +65,18 @@ public class Comm {
     
     public static String clearScreen() {
         return "clrscr";
+    }
+    
+    public static String displayGmail() {
+        return "gmail_";
+    }
+    
+    public static String displayGmailUrgent() {
+        return "ugmail";
+    }
+    
+    public static String displayMsg() {
+        return "msg___";
     }
 
     // Thanks to Andrew:

@@ -34,8 +34,10 @@ import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -55,10 +57,12 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth2";
 
-    Button btnAnim1, btnAnim2, btnOff, btnConnect, btnColorPicker, btnErase, btnSMS;
-    TextView txtArduino;
-    Handler h;
-    GridView gridView;
+    private Button btnClearScreen, btnConnect, btnColorPicker, btnEraserToggle, btnSMS;
+    private TextView txtArduino;
+    private GridView gridView;
+    
+    private Handler h;
+    private DataUpdateReceiver dataUpdateReceiver;
 
     static int currentColor = 0xff6699cc; // Currently selected color
 
@@ -70,7 +74,7 @@ public class MainActivity extends Activity {
     private StringBuilder sb = new StringBuilder();
 
     private ConnectedThread mConnectedThread;
-
+ 
     // SPP UUID service
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -84,12 +88,10 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        btnAnim1 = (Button) findViewById(R.id.btnAnim1);
-        btnAnim2 = (Button) findViewById(R.id.btnAnim2);
-        btnOff = (Button) findViewById(R.id.btnClear);
+        btnClearScreen = (Button) findViewById(R.id.btnClear);
         btnConnect = (Button) findViewById(R.id.btnConnect);
         btnColorPicker = (Button) findViewById(R.id.btnColorPicker);
-        btnErase = (Button) findViewById(R.id.btnErase);
+        btnEraserToggle = (Button) findViewById(R.id.btnErase);
         btnSMS = (Button) findViewById(R.id.btnSMS);
         txtArduino = (TextView) findViewById(R.id.txtArduino); // displays received data from the Arduino
         gridView = (GridView) findViewById(R.id.gvLEDs); // displays interactive LED grid
@@ -108,8 +110,6 @@ public class MainActivity extends Activity {
                         Log.i("MSG", "sbprint: " + sbprint);
                         sb.delete(0, sb.length()); // and clear
                         txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
-                        btnAnim2.setEnabled(true);
-                        btnAnim1.setEnabled(true);
                     }
                     // Log.d(TAG, "...String:"+ sb.toString() + "Byte:" + msg.arg1 + "...");
                     break;
@@ -120,28 +120,14 @@ public class MainActivity extends Activity {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
 
-        btnAnim1.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                btnAnim1.setEnabled(false);
-                mConnectedThread.write("0");
-            }
-        });
-
-        btnAnim2.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                btnAnim2.setEnabled(false);
-                mConnectedThread.write("1");
-            }
-        });
-
-        btnOff.setOnClickListener(new OnClickListener() {
+        btnClearScreen.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 mConnectedThread.write(Comm.clearScreen());
                 int count = gridView.getChildCount();
                 ImageView tv;
                     for (int i = 0; i < count; i++){
                         tv = (ImageView) gridView.getChildAt(i);
-                        tv.setColorFilter(Color.WHITE);
+                        tv.setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
                     }
             }
         });
@@ -153,35 +139,35 @@ public class MainActivity extends Activity {
             }
         });
 
-        btnErase.setOnClickListener(new OnClickListener() {
+        btnEraserToggle.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 if (!eraseMode) {
                     eraseMode = true;
-                    btnErase.setText("Draw");
+                    btnEraserToggle.setText("Draw");
                 } else {
                     eraseMode = false;
-                    btnErase.setText("Erase");
+                    btnEraserToggle.setText("Eraser");
                 }
             }
         });
 
         btnSMS.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                sendNotification("Message", "Hiya Lumi!");
+                // Currently there's no easy to to fake SMS to the phone, so I'm creating 
+                // a new notification with a 1 second delay instead.
+                Handler myHandler = new Handler();
+                myHandler.postDelayed(delayedMsgNotification, 1000);
             }
         });
 
         btnColorPicker.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-
                 AmbilWarnaDialog dialog = new AmbilWarnaDialog(MainActivity.this, currentColor,
                         new OnAmbilWarnaListener() {
-
                             // Returned when user selects a color
                             public void onOk(AmbilWarnaDialog dialog, int color) {
                                 currentColor = color;
                             }
-
                             // User cancels color selection
                             public void onCancel(AmbilWarnaDialog dialog) {
                             }
@@ -235,12 +221,20 @@ public class MainActivity extends Activity {
             context.startService(service);
         }
     }
+    
+    
 
     @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "...onResume - try connect...");
         connectToBluetooth();
+        if (dataUpdateReceiver == null) 
+            dataUpdateReceiver = new DataUpdateReceiver();
+        IntentFilter intentFilterEmail = new IntentFilter(Comm.EMAIL);
+        registerReceiver(dataUpdateReceiver, intentFilterEmail);
+        IntentFilter intentFilterMsg = new IntentFilter(Comm.MSG);
+        registerReceiver(dataUpdateReceiver, intentFilterMsg);
     }
     
     protected void sendNotification(String title, String message) {
@@ -325,6 +319,8 @@ public class MainActivity extends Activity {
     public void onPause() {
         super.onPause();
         Log.d(TAG, "...In onPause()...");
+        if (dataUpdateReceiver != null) 
+            unregisterReceiver(dataUpdateReceiver);
         closeSocket();
     }
 
@@ -419,4 +415,30 @@ public class MainActivity extends Activity {
             }
         }
     }
+    
+    // Listens for NotificationCatcherService to catch a notification
+    private class DataUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("BroadcastReceiver", intent.getAction().toString());
+            if (intent.getAction().equals(Comm.EMAIL)) {
+                mConnectedThread.write(Comm.displayGmail());
+            }
+            else if (intent.getAction().equals(Comm.EMAIL_URGENT)) {
+                mConnectedThread.write(Comm.displayGmailUrgent());
+            }
+            else if (intent.getAction().equals(Comm.MSG)) {
+                mConnectedThread.write(Comm.displayMsg());
+            }
+        }
+    }
+    
+    // Demo purposes only
+    private Runnable delayedMsgNotification = new Runnable()
+    {
+        public void run()
+        {
+            sendNotification("Message", "Hiya Lumi!");
+        }
+     };
 }

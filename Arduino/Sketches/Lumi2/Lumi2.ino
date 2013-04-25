@@ -7,9 +7,28 @@
 
 #include "Colorduino.h"
 
+// Externally stored imagesets
+extern unsigned char pic[6][8][8][3];
+extern unsigned char msg[2][8][8][3];
+extern unsigned char gmail[1][8][8][3];
+extern unsigned char ugmail[1][8][8][3];
+
 char val;         // variable to receive data from the serial port
 int ledpin = 2;  // LED connected to pin 2 (on-board LED)
 char bytes[5];
+int i;
+
+void displayImage(unsigned char imgset[6][8][8][3], int index) {
+  unsigned char i, j, r, g, b;
+  for (i = 0;i<8;i++) {
+    for(j = 0;j<8;j++) {
+      r = pgm_read_byte(&(imgset[index][i][j][0]));
+      g = pgm_read_byte(&(imgset[index][i][j][1]));
+      b = pgm_read_byte(&(imgset[index][i][j][2]));
+      Colorduino.SetPixel(i, j, r, g, b);
+    }
+  }
+}
 
 void setup()
 {
@@ -40,12 +59,49 @@ void loop() {
       }
     }
     else if (val == 'c'){ // Clear Screen
-        if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
-          Serial.flush();
-          Colorduino.ColorFill(0, 0, 0);
-          Colorduino.ColorFill(0, 0, 0);
+      if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
+        Serial.flush();
+        Colorduino.ColorFill(0, 0, 0);
+        Colorduino.ColorFill(0, 0, 0);
+      }
+    } 
+    else if (val == 'u'){ // Urgent Gmail
+      if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
+        Serial.flush();
+        for (i = 0; i < 10; i++) {
+          Colorduino.ColorFill(0,0,0);
+          delay(200);
+          displayImage(ugmail, 0);
+          Colorduino.FlipPage();
+          delay(200);
         }
-      }  
+      }
+    } 
+    else if (val == 'g'){ // Gmail
+      if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
+        Serial.flush();
+        for (i = 0; i < 5; i++) {
+          Colorduino.ColorFill(0,0,0);
+          delay(500);
+          displayImage(ugmail, 0);
+          Colorduino.FlipPage();
+          delay(500);
+        }
+      }
+    } 
+    else if (val == 'm'){ // Message
+      if (Serial.readBytes(bytes, 5) == 5) { // If successfully reads next 5 bytes:
+        Serial.flush();
+        for (i = 0; i < 5; i++) {
+          displayImage(msg, 0);
+          Colorduino.FlipPage();
+          delay(500);
+          displayImage(msg, 1);
+          Colorduino.FlipPage();
+          delay(500);
+        }
+      }
+    }  
   }
 }
 
